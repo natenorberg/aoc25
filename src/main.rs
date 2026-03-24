@@ -1,6 +1,7 @@
 mod day01;
+mod utils;
 
 fn main() {
-    day01::part1();
-    println!("Hello, world!");
+    let answer = day01::part2("src/inputs/day01/input.txt");
+    println!("{}", answer);
 }
