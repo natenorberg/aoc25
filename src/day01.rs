@@ -109,21 +109,21 @@ mod test {
 
     #[test]
     fn part1_test_input() {
-        assert_eq!(part1("src/day01/test-input.txt"), 3);
+        assert_eq!(part1("src/inputs/day01/test-input.txt"), 3);
     }
 
     #[test]
     fn part1_real_input() {
-        assert_eq!(part1("src/day01/input.txt"), 1031);
+        assert_eq!(part1("src/inputs/day01/input.txt"), 1031);
     }
 
     #[test]
     fn part2_test_input() {
-        assert_eq!(part2("src/day01/test-input.txt"), 6);
+        assert_eq!(part2("src/inputs/day01/test-input.txt"), 6);
     }
 
     #[test]
     fn part2_real_input() {
-        assert_eq!(part2("src/day01/input.txt"), 5831);
+        assert_eq!(part2("src/inputs/day01/input.txt"), 5831);
     }
 }
