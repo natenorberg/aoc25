@@ -1,3 +1,4 @@
+use crate::utils::modulo;
 use std::fs;
 
 pub fn part1(filename: &str) -> i32 {
@@ -42,7 +43,7 @@ fn next_number(initial: i32, turn: Turn) -> (i32, i32) {
             let final_turn = distance % 100;
             let raw_position = initial - final_turn;
             let final_turn_touched_zero = initial != 0 && raw_position <= 0;
-            let next_position = ((raw_position % 100) + 100) % 100;
+            let next_position = modulo(raw_position, 100);
             let turns = if final_turn_touched_zero {
                 extra_turns + 1
             } else {
@@ -55,16 +56,13 @@ fn next_number(initial: i32, turn: Turn) -> (i32, i32) {
             let final_turn = distance % 100;
             let raw_position = initial + final_turn;
             let final_turn_touched_zero = initial != 0 && raw_position > 99;
-            let next_position = ((raw_position % 100) + 100) % 100;
+            let next_position = modulo(raw_position, 100);
             let turns = if final_turn_touched_zero {
                 extra_turns + 1
             } else {
                 extra_turns
             };
             (next_position, turns)
-            //let raw_position = initial + distance;
-            //let next_position = raw_position % 100;
-            //(next_position, raw_position / 100)
         }
     }
 }
