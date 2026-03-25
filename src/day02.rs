@@ -33,13 +33,30 @@ fn get_invalid_numbers(range: Range) -> Vec<i64> {
 }
 
 fn is_valid(number: i64) -> bool {
+    !is_repeated(number, 2)
+}
+
+fn is_repeated(number: i64, num_times: usize) -> bool {
     let string = number.to_string();
-    if !string.len().is_multiple_of(2) {
-        true
+    if !string.len().is_multiple_of(num_times) {
+        false
     } else {
-        let (before, after) = string.split_at(string.len() / 2);
-        before != after
+        let chunks = split_chunks(&string, string.len() / num_times);
+        let first = chunks[0];
+        chunks.into_iter().all(|chunk| chunk == first)
     }
+}
+
+fn split_chunks(input: &str, size: usize) -> Vec<&str> {
+    println!("split_chunks");
+    let mut chunks = Vec::new();
+    let mut remaining = input;
+    while !remaining.is_empty() {
+        let (before, after) = remaining.split_at(size);
+        chunks.push(before);
+        remaining = after;
+    }
+    chunks
 }
 
 // Parsing ====================================================================
