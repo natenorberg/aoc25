@@ -1,6 +1,6 @@
 use std::fs;
 
-pub fn part1(filename: &str) -> i32 {
+pub fn part1(filename: &str) -> u32 {
     let input = fs::read_to_string(filename).expect("Couln't read the file");
     let banks = parse_input(&input);
     banks
@@ -18,13 +18,13 @@ pub fn part2(filename: &str) -> i64 {
 // Data types =================================================================
 
 // Logic ======================================================================
-fn get_joltiest_batteries(bank: Vec<i32>) -> (i32, i32) {
+fn get_joltiest_batteries(bank: Vec<u32>) -> Vec<u32> {
     let (first, first_idx) = get_joltiest_battery(&bank[..bank.len() - 1]);
     let (second, _) = get_joltiest_battery(&bank[first_idx + 1..]);
-    (first, second)
+    vec![first, second]
 }
 
-fn get_joltiest_battery(options: &[i32]) -> (i32, usize) {
+fn get_joltiest_battery(options: &[u32]) -> (u32, usize) {
     let mut joltage = 0;
     let mut index: usize = 0;
 
@@ -37,19 +37,24 @@ fn get_joltiest_battery(options: &[i32]) -> (i32, usize) {
     (joltage, index)
 }
 
-fn get_joltage(batteries: (i32, i32)) -> i32 {
-    (batteries.0 * 10) + batteries.1
+fn get_joltage(batteries: Vec<u32>) -> u32 {
+    let mut joltage = 0;
+    let base: u32 = 10;
+    for (i, battery) in batteries.iter().rev().enumerate() {
+        joltage += battery * base.pow(i as u32);
+    }
+    joltage
 }
 
 // Parsing ====================================================================
-fn parse_input(input: &str) -> Vec<Vec<i32>> {
+fn parse_input(input: &str) -> Vec<Vec<u32>> {
     input.lines().map(parse_bank).collect()
 }
 
-fn parse_bank(input: &str) -> Vec<i32> {
-    let batteries: Vec<i32> = input
+fn parse_bank(input: &str) -> Vec<u32> {
+    let batteries: Vec<u32> = input
         .chars()
-        .map(|c| c.to_digit(10).unwrap() as i32)
+        .map(|c| c.to_digit(10).unwrap() as u32)
         .collect();
     batteries
 }
@@ -75,10 +80,10 @@ mod test {
             fs::read_to_string("src/inputs/day03/test-input.txt").expect("Couln't read the file");
         let banks = parse_input(&input);
 
-        assert_eq!(get_joltiest_batteries(banks[0].clone()), (9, 8));
-        assert_eq!(get_joltiest_batteries(banks[1].clone()), (8, 9));
-        assert_eq!(get_joltiest_batteries(banks[2].clone()), (7, 8));
-        assert_eq!(get_joltiest_batteries(banks[3].clone()), (9, 2));
+        assert_eq!(get_joltiest_batteries(banks[0].clone()), vec![9, 8]);
+        assert_eq!(get_joltiest_batteries(banks[1].clone()), vec![8, 9]);
+        assert_eq!(get_joltiest_batteries(banks[2].clone()), vec![7, 8]);
+        assert_eq!(get_joltiest_batteries(banks[3].clone()), vec![9, 2]);
     }
 
     #[test]
