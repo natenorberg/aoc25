@@ -4,6 +4,6 @@ mod day03;
 mod utils;
 
 fn main() {
-    let answer = day03::part1("src/inputs/day03/input.txt");
+    let answer = day03::part2("src/inputs/day03/input.txt");
     println!("{}", answer);
 }
