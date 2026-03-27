@@ -6,12 +6,25 @@ pub fn part1(filename: &str) -> u32 {
     get_accessible_rolls(&map).len() as u32
 }
 
-// TODO: Loop until nothing else accessible
-
-pub fn part2(filename: &str) -> u64 {
+pub fn part2(filename: &str) -> u32 {
     let input = fs::read_to_string(filename).expect("Couln't read the file");
-    0
+    let mut map = parse_input(&input);
+
+    let mut removed = 0;
+    loop {
+        let accessible_rolls = get_accessible_rolls(&map);
+
+        if accessible_rolls.is_empty() {
+            break;
+        }
+
+        map = remove_rolls(&accessible_rolls, map);
+        removed += accessible_rolls.len();
+    }
+
+    removed as u32
 }
+
 // Data Structures ============================================================
 struct Location {
     x: usize,
@@ -19,8 +32,8 @@ struct Location {
 }
 
 // Logic ======================================================================
-fn remove_rolls(rolls: Vec<Location>, mut map: Vec<Vec<char>>) -> Vec<Vec<char>> {
-    rolls.into_iter().for_each(|location| {
+fn remove_rolls(rolls: &[Location], mut map: Vec<Vec<char>>) -> Vec<Vec<char>> {
+    rolls.iter().for_each(|location| {
         map[location.y][location.x] = '.';
     });
     map
@@ -55,7 +68,7 @@ const ADJACENT_OFFSETS: [(isize, isize); 8] = [
     (1, 1),
 ];
 
-fn get_num_adjacent_rolls(x: isize, y: isize, map: &Vec<Vec<char>>) -> u32 {
+fn get_num_adjacent_rolls(x: isize, y: isize, map: &[Vec<char>]) -> u32 {
     let mut adjacent_rolls = 0;
 
     for (offset_x, offset_y) in ADJACENT_OFFSETS {
@@ -107,7 +120,7 @@ mod test {
             fs::read_to_string("src/inputs/day04/test-input.txt").expect("Couln't read the file");
         let map = parse_input(&input);
         let accesible_rolls = get_accessible_rolls(&map);
-        let map = remove_rolls(accesible_rolls, map);
+        let map = remove_rolls(&accesible_rolls, map);
 
         let expected_input = ".......@..
 .@@.@.@.@@
@@ -120,12 +133,12 @@ mod test {
 .@@@@@@@@.
 ....@@@...
 ";
-        let expected_map = parse_input(&expected_input);
+        let expected_map = parse_input(expected_input);
         assert_eq!(map, expected_map);
 
         // Run it again
         let accesible_rolls = get_accessible_rolls(&map);
-        let map = remove_rolls(accesible_rolls, map);
+        let map = remove_rolls(&accesible_rolls, map);
 
         let expected_input = "..........
 .@@.....@.
@@ -138,7 +151,7 @@ mod test {
 ..@@@@@@@.
 ....@@@...
 ";
-        let expected_map = parse_input(&expected_input);
+        let expected_map = parse_input(expected_input);
         assert_eq!(map, expected_map);
     }
 
@@ -152,13 +165,13 @@ mod test {
         assert_eq!(part1("src/inputs/day04/input.txt"), 1356);
     }
 
-    // #[test]
-    // fn part2_test_input() {
-    //     assert_eq!(part2("src/inputs/day04/test-input.txt"), 3121910778619);
-    // }
+    #[test]
+    fn part2_test_input() {
+        assert_eq!(part2("src/inputs/day04/test-input.txt"), 43);
+    }
 
-    // #[test]
-    // fn part2_real() {
-    //     assert_eq!(part2("src/inputs/day04/input.txt"), 172167155440541);
-    // }
+    #[test]
+    fn part2_real() {
+        assert_eq!(part2("src/inputs/day04/input.txt"), 8713);
+    }
 }
