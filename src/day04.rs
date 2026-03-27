@@ -6,7 +6,6 @@ pub fn part1(filename: &str) -> u32 {
     get_accessible_rolls(&map).len() as u32
 }
 
-// TODO: Function to remove accessible rolls
 // TODO: Loop until nothing else accessible
 
 pub fn part2(filename: &str) -> u64 {
@@ -20,6 +19,13 @@ struct Location {
 }
 
 // Logic ======================================================================
+fn remove_rolls(rolls: Vec<Location>, mut map: Vec<Vec<char>>) -> Vec<Vec<char>> {
+    rolls.into_iter().for_each(|location| {
+        map[location.y][location.x] = '.';
+    });
+    map
+}
+
 fn get_accessible_rolls(map: &Vec<Vec<char>>) -> Vec<Location> {
     let mut accessible_rolls = Vec::new();
 
@@ -93,6 +99,47 @@ mod test {
         assert_eq!(get_num_adjacent_rolls(4, 4, &map), 8);
         assert_eq!(get_num_adjacent_rolls(9, 7, &map), 4);
         assert_eq!(get_num_adjacent_rolls(0, 9, &map), 1);
+    }
+
+    #[test]
+    fn test_remove_accessible_rolls() {
+        let input =
+            fs::read_to_string("src/inputs/day04/test-input.txt").expect("Couln't read the file");
+        let map = parse_input(&input);
+        let accesible_rolls = get_accessible_rolls(&map);
+        let map = remove_rolls(accesible_rolls, map);
+
+        let expected_input = ".......@..
+.@@.@.@.@@
+@@@@@...@@
+@.@@@@..@.
+.@.@@@@.@.
+.@@@@@@@.@
+.@.@.@.@@@
+..@@@.@@@@
+.@@@@@@@@.
+....@@@...
+";
+        let expected_map = parse_input(&expected_input);
+        assert_eq!(map, expected_map);
+
+        // Run it again
+        let accesible_rolls = get_accessible_rolls(&map);
+        let map = remove_rolls(accesible_rolls, map);
+
+        let expected_input = "..........
+.@@.....@.
+.@@@@...@@
+..@@@@....
+.@.@@@@...
+..@@@@@@..
+...@.@.@@@
+..@@@.@@@@
+..@@@@@@@.
+....@@@...
+";
+        let expected_map = parse_input(&expected_input);
+        assert_eq!(map, expected_map);
     }
 
     #[test]
