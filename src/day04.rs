@@ -3,28 +3,25 @@ use std::fs;
 pub fn part1(filename: &str) -> u32 {
     let input = fs::read_to_string(filename).expect("Couln't read the file");
     let map = parse_input(&input);
-    count_accessible_rolls(&map)
+    get_accessible_rolls(&map).len() as u32
 }
+
+// TODO: Function to remove accessible rolls
+// TODO: Loop until nothing else accessible
 
 pub fn part2(filename: &str) -> u64 {
     let input = fs::read_to_string(filename).expect("Couln't read the file");
     0
 }
-
-// Data types =================================================================
-// struct Point {
-//     x: isize,
-//     y: isize,
-// }
-//
-// enum Item {
-//     Space(Point),
-//     Roll(Point),
-// }
+// Data Structures ============================================================
+struct Location {
+    x: usize,
+    y: usize,
+}
 
 // Logic ======================================================================
-fn count_accessible_rolls(map: &Vec<Vec<char>>) -> u32 {
-    let mut accessible_rolls = 0;
+fn get_accessible_rolls(map: &Vec<Vec<char>>) -> Vec<Location> {
+    let mut accessible_rolls = Vec::new();
 
     for (y, line) in map.iter().enumerate() {
         for (x, cell) in line.iter().enumerate() {
@@ -33,7 +30,7 @@ fn count_accessible_rolls(map: &Vec<Vec<char>>) -> u32 {
             }
             let adjacent = get_num_adjacent_rolls(x as isize, y as isize, map);
             if adjacent < 4 {
-                accessible_rolls += 1;
+                accessible_rolls.push(Location { x, y });
             }
         }
     }
