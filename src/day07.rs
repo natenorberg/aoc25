@@ -126,11 +126,6 @@ fn count_timelines(beams: &[Beam]) -> u64 {
     beams.iter().map(|b| b.timelines).sum()
 }
 
-// Parsing ====================================================================
-fn parse_input(input: &str) -> Vec<Vec<char>> {
-    input.lines().map(|line| line.chars().collect()).collect()
-}
-
 // Tests ======================================================================
 #[cfg(test)]
 mod test {
