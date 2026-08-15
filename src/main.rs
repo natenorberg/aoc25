@@ -5,9 +5,10 @@ mod day04;
 mod day05;
 mod day06;
 mod day07;
+mod day08;
 mod utils;
 
 fn main() {
-    let answer = day07::part2("src/inputs/day07/input.txt");
+    let answer = day08::part2("src/inputs/day08/input.txt");
     println!("{}", answer);
 }
