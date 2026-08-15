@@ -1,5 +1,6 @@
 use std::fs;
 
+#[allow(dead_code)]
 pub fn part1(filename: &str, num_connections: usize) -> u64 {
     let (_boxes, connections, mut circuits) = init(&filename);
 
@@ -8,10 +9,11 @@ pub fn part1(filename: &str, num_connections: usize) -> u64 {
     get_part1_score(&circuits)
 }
 
-#[allow(unused)]
-pub fn part2(filename: &str) -> u64 {
-    // let input = fs::read_to_string(filename).expect("Couln't read the file");
-    0
+pub fn part2(filename: &str) -> f64 {
+    let (boxes, connections, mut circuits) = init(&filename);
+    let last_connection = get_last_connection(&mut circuits, &connections);
+
+    get_part2_score(last_connection, &boxes)
 }
 
 // Data Structures ============================================================
@@ -64,15 +66,39 @@ fn connect(circuits: &mut Vec<Circuit>, connection: &Connection) {
     }
 
     // Different circuits. Merge B into A
-    let b = circuits.swap_remove(b_idx);
+    let b = circuits.remove(b_idx);
+    let a_idx = circuits
+        .iter()
+        .position(|c| c.has_box(connection.from_idx))
+        .unwrap();
     circuits[a_idx].merge(&b);
 }
 
+// Main logic for part 1
 fn join_closest_circuits(n: usize, circuits: &mut Vec<Circuit>, connections: &[Connection]) {
     (0..n).for_each(|i| {
         let connection = &connections[i];
         connect(circuits, connection)
     });
+}
+
+// Main logic for part 2
+fn get_last_connection<'a>(
+    circuits: &mut Vec<Circuit>,
+    connections: &'a [Connection],
+) -> &'a Connection {
+    // Loop until there's only one circuit
+    let mut i = 0;
+
+    loop {
+        let connection = &connections[i];
+        connect(circuits, connection);
+
+        if circuits.len() == 1 {
+            return &connection;
+        }
+        i += 1;
+    }
 }
 
 fn build_connections(boxes: &[Box]) -> Vec<Connection> {
@@ -119,6 +145,12 @@ fn get_part1_score(circuits: &[Circuit]) -> u64 {
     }
     let lengths: Vec<u64> = circuits.iter().map(|c| c.box_ids.len() as u64).collect();
     lengths[0] * lengths[1] * lengths[2]
+}
+
+fn get_part2_score(connection: &Connection, boxes: &[Box]) -> f64 {
+    let from_box = boxes[connection.from_idx];
+    let to_box = boxes[connection.to_idx];
+    from_box.x * to_box.x
 }
 
 // Parsing ====================================================================
@@ -203,13 +235,36 @@ mod test {
         assert_eq!(part1("src/inputs/day08/input.txt", 1000), 115885);
     }
 
-    // #[test]
-    // fn part2_test_input() {
-    //     assert_eq!(part2("src/inputs/day08/test-input.txt"), 25272);
-    // }
+    #[test]
+    fn test_get_last_connection() {
+        let (boxes, connections, mut circuits) = init("src/inputs/day08/test-input.txt");
+        let last_connection = get_last_connection(&mut circuits, &connections);
 
-    // #[test]
-    // fn part2_real() {
-    //     assert_eq!(part2("src/inputs/day08/input.txt"), 11744693538946);
-    // }
+        assert_eq!(boxes[last_connection.from_idx], get_box(216, 146, 977));
+        assert_eq!(boxes[last_connection.to_idx], get_box(117, 168, 530));
+    }
+
+    #[test]
+    fn test_get_part2_score() {
+        let input =
+            fs::read_to_string("src/inputs/day08/test-input.txt").expect("Couln't read the file");
+        let boxes = parse_input(&input);
+        let test_last_connection = Connection {
+            from_idx: 10,
+            to_idx: 12,
+            distance: 1000 as f64,
+        };
+
+        assert_eq!(get_part2_score(&test_last_connection, &boxes), 25272.0);
+    }
+
+    #[test]
+    fn part2_test_input() {
+        assert_eq!(part2("src/inputs/day08/test-input.txt"), 25272.0);
+    }
+
+    #[test]
+    fn part2_real() {
+        assert_eq!(part2("src/inputs/day08/input.txt"), 274150525.0);
+    }
 }
