@@ -37,7 +37,7 @@ struct Circuit {
 }
 
 impl Circuit {
-    fn merge(&mut self, other: &Circuit) {
+    fn merge(&mut self, other: Circuit) {
         self.box_ids.extend_from_slice(&other.box_ids);
     }
 
@@ -63,7 +63,7 @@ fn connect(circuits: &mut Vec<Circuit>, connection: &Connection) {
     // B needs to be the one with the higher index or the indices will get off when we remove it
     let (keep_idx, drop_idx) = (a_idx.min(b_idx), a_idx.max(b_idx));
     let b = circuits.remove(drop_idx);
-    circuits[keep_idx].merge(&b);
+    circuits[keep_idx].merge(b);
 }
 
 // Main logic for part 1
@@ -83,18 +83,13 @@ fn get_last_connection<'a>(
     circuits: &mut Vec<Circuit>,
     connections: &'a [Connection],
 ) -> &'a Connection {
-    // Loop until there's only one circuit
-    let mut i = 0;
-
-    loop {
-        let connection = &connections[i];
+    for connection in connections {
         connect(circuits, connection);
-
         if circuits.len() == 1 {
             return &connection;
         }
-        i += 1;
     }
+    panic!("Couldn't connect all the circuits")
 }
 
 fn build_connections(boxes: &[Box]) -> Vec<Connection> {
@@ -204,9 +199,9 @@ mod test {
     #[test]
     fn test_merge_circuits() {
         let mut circuit1 = Circuit { box_ids: vec![0] };
-        let mut circuit2 = Circuit { box_ids: vec![1] };
+        let circuit2 = Circuit { box_ids: vec![1] };
 
-        circuit1.merge(&mut circuit2);
+        circuit1.merge(circuit2);
         assert_eq!(circuit1.box_ids, vec![0, 1])
     }
 
