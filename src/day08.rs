@@ -1,18 +1,16 @@
 use std::fs;
 
 pub fn part1(filename: &str, num_connections: usize) -> u64 {
-    let input = fs::read_to_string(filename).expect("Couln't read the file");
-    let boxes = parse_input(&input);
-    let connections = build_connections(&boxes);
-    let mut circuits = init_circuits(boxes.len());
+    let (_boxes, connections, mut circuits) = init(&filename);
 
     join_closest_circuits(num_connections, &mut circuits, &connections);
     circuits.sort_by(|a, b| b.box_ids.len().cmp(&a.box_ids.len()));
-    get_score(&circuits)
+    get_part1_score(&circuits)
 }
 
+#[allow(unused)]
 pub fn part2(filename: &str) -> u64 {
-    let input = fs::read_to_string(filename).expect("Couln't read the file");
+    // let input = fs::read_to_string(filename).expect("Couln't read the file");
     0
 }
 
@@ -48,25 +46,32 @@ impl Circuit {
 
 // Logic ======================================================================
 
+/*
+ * The main logic. Join the circuits in the given connection
+ */
+fn connect(circuits: &mut Vec<Circuit>, connection: &Connection) {
+    let a_idx = circuits
+        .iter()
+        .position(|c| c.has_box(connection.from_idx))
+        .unwrap();
+    let b_idx = circuits
+        .iter()
+        .position(|c| c.has_box(connection.to_idx))
+        .unwrap();
+
+    if a_idx == b_idx {
+        return; // Circuits are the same. Don't do anything
+    }
+
+    // Different circuits. Merge B into A
+    let b = circuits.swap_remove(b_idx);
+    circuits[a_idx].merge(&b);
+}
+
 fn join_closest_circuits(n: usize, circuits: &mut Vec<Circuit>, connections: &[Connection]) {
     (0..n).for_each(|i| {
         let connection = &connections[i];
-        let a_idx = circuits
-            .iter()
-            .position(|c| c.has_box(connection.from_idx))
-            .unwrap();
-        let b_idx = circuits
-            .iter()
-            .position(|c| c.has_box(connection.to_idx))
-            .unwrap();
-
-        if a_idx == b_idx {
-            return; // Circuits are the same. Don't do anything
-        }
-
-        // Different circuits. Merge B into A
-        let b = circuits.swap_remove(b_idx);
-        circuits[a_idx].merge(&b);
+        connect(circuits, connection)
     });
 }
 
@@ -98,8 +103,17 @@ fn get_distance(a: &Box, b: &Box) -> f64 {
     ((b.x - a.x).powi(2) + (b.y - a.y).powi(2) + (b.z - a.z).powi(2)).sqrt()
 }
 
+fn init(filename: &str) -> (Vec<Box>, Vec<Connection>, Vec<Circuit>) {
+    let input = fs::read_to_string(filename).expect("Couln't read the file");
+    let boxes = parse_input(&input);
+    let connections = build_connections(&boxes);
+    let circuits = init_circuits(boxes.len());
+
+    (boxes, connections, circuits)
+}
+
 // Scoring ====================================================================
-fn get_score(circuits: &[Circuit]) -> u64 {
+fn get_part1_score(circuits: &[Circuit]) -> u64 {
     if !circuits.is_sorted_by(|a, b| a.box_ids.len() >= b.box_ids.len()) {
         panic!("Not sorted")
     }
@@ -150,10 +164,7 @@ mod test {
 
     #[test]
     fn test_get_sort_distances() {
-        let input =
-            fs::read_to_string("src/inputs/day08/test-input.txt").expect("Couln't read the file");
-        let boxes = parse_input(&input);
-        let connections = build_connections(&boxes);
+        let (boxes, connections, _circuits) = init("src/inputs/day08/test-input.txt");
 
         assert_eq!(boxes[connections[0].from_idx], get_box(162, 817, 812));
         assert_eq!(boxes[connections[0].to_idx], get_box(425, 690, 689));
@@ -173,11 +184,7 @@ mod test {
 
     #[test]
     fn test_join_closest_circuits() {
-        let input =
-            fs::read_to_string("src/inputs/day08/test-input.txt").expect("Couln't read the file");
-        let boxes = parse_input(&input);
-        let connections = build_connections(&boxes);
-        let mut circuits = init_circuits(boxes.len());
+        let (_boxes, connections, mut circuits) = init("src/inputs/day08/test-input.txt");
         join_closest_circuits(10, &mut circuits, &connections);
 
         circuits.sort_by(|a, b| b.box_ids.len().cmp(&a.box_ids.len()));
@@ -198,7 +205,7 @@ mod test {
 
     // #[test]
     // fn part2_test_input() {
-    //     assert_eq!(part2("src/inputs/day08/test-input.txt"), 3263827);
+    //     assert_eq!(part2("src/inputs/day08/test-input.txt"), 25272);
     // }
 
     // #[test]
