@@ -52,26 +52,18 @@ impl Circuit {
  * The main logic. Join the circuits in the given connection
  */
 fn connect(circuits: &mut Vec<Circuit>, connection: &Connection) {
-    let a_idx = circuits
-        .iter()
-        .position(|c| c.has_box(connection.from_idx))
-        .unwrap();
-    let b_idx = circuits
-        .iter()
-        .position(|c| c.has_box(connection.to_idx))
-        .unwrap();
+    let a_idx = get_circuit_idx_for_box(circuits, connection.from_idx);
+    let b_idx = get_circuit_idx_for_box(circuits, connection.to_idx);
 
     if a_idx == b_idx {
         return; // Circuits are the same. Don't do anything
     }
 
     // Different circuits. Merge B into A
-    let b = circuits.remove(b_idx);
-    let a_idx = circuits
-        .iter()
-        .position(|c| c.has_box(connection.from_idx))
-        .unwrap();
-    circuits[a_idx].merge(&b);
+    // B needs to be the one with the higher index or the indices will get off when we remove it
+    let (keep_idx, drop_idx) = (a_idx.min(b_idx), a_idx.max(b_idx));
+    let b = circuits.remove(drop_idx);
+    circuits[keep_idx].merge(&b);
 }
 
 // Main logic for part 1
@@ -80,6 +72,10 @@ fn join_closest_circuits(n: usize, circuits: &mut Vec<Circuit>, connections: &[C
         let connection = &connections[i];
         connect(circuits, connection)
     });
+}
+
+fn get_circuit_idx_for_box(circuits: &[Circuit], box_idx: usize) -> usize {
+    circuits.iter().position(|c| c.has_box(box_idx)).unwrap()
 }
 
 // Main logic for part 2
